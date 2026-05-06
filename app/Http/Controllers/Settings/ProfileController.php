@@ -29,19 +29,41 @@ class ProfileController extends Controller
      * Update the user's profile information.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+{
+    $user = $request->user();
+    $data = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
-
-        return to_route('profile.edit');
+    //  Gestion de l’upload d’un avatar
+    if ($request->hasFile('avatar_file')) {
+        $path = $request->file('avatar_file')->store('avatars', 'public');
+        // on remplace l’avatar par le fichier uploadé
+        $data['avatar'] = $path; 
     }
+
+    /** Gestion d’un avatar prédéfini
+    **Si avatar prédéfini envoyé, il est déjà dans $data['avatar']
+   **Si rien envoyé, on ne change pas l’avatar existant  **/
+    if (!isset($data['avatar'])) {
+        unset($data['avatar']);
+    }
+
+    // Mise à jour des champs
+    $user->fill($data);
+
+    if ($user->isDirty('email')) {
+        $user->email_verified_at = null;
+    }
+
+    $user->save();
+
+    Inertia::flash('toast', [
+        'type' => 'success',
+        'message' => __('Profile updated.')
+    ]);
+
+    return to_route('profile.edit');
+}
+
 
     /**
      * Delete the user's profile.
