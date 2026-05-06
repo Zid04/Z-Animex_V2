@@ -7,7 +7,7 @@ use App\Models\Episode;
 use App\Services\ProgressService;
 use Illuminate\Support\Facades\Auth;
 
-class ProgressController extends Controller
+class UserProgressController extends Controller
 {
     public function store(
         Media $media,
