@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\User;
 use App\Models\Media;
 
-class ProgressPolicy
+class UserProgressPolicy
 {
     /**
      * voir progression d’un média
