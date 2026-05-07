@@ -6,9 +6,11 @@ use App\Models\Season;
 use App\Models\Episode;
 use App\Services\ProgressService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserProgressController extends Controller
 {
+    use AuthorizesRequests;
     public function store(
         Media $media,
         Season $season,

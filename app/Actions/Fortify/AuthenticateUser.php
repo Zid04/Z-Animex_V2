@@ -9,7 +9,7 @@ class AuthenticateUser
 {
     public function authenticate(Request $request)
     {
-        $login = $request->input('email');
+        $login = $request->input('login');
 
         // Détecter si c’est un email ou un pseudo
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'pseudo';

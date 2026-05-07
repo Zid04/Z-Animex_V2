@@ -7,9 +7,11 @@ use App\Models\UserRating;
 use App\Services\UserRatingService;
 use App\Http\Requests\StoreUserRatingRequest;
 use App\Http\Resources\UserRatingResource;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserRatingController extends Controller
 {
+use AuthorizesRequests;
     public function __construct(
         private UserRatingService $service
     ) {}
@@ -24,7 +26,8 @@ class UserRatingController extends Controller
             $request->validated()['rating']
         );
 
-        return new UserRatingResource($rating);
+       // return new UserRatingResource($rating);(json retourné pour les tests)
+         return back()->with('success', 'Note enregistrée');
     }
 
     public function destroy(Media $media)
@@ -36,8 +39,10 @@ class UserRatingController extends Controller
         $this->authorize('delete', $rating);
         $this->service->deleteRating($rating);
 
-        return response()->json([
-            'message' => 'Rating deleted'
-        ]);
+        /** return response()->json([
+           * 'message' => 'Rating deleted'
+        * ]); (json retourner)**/
+
+    return back()->with('success', 'Note supprimée');
     }
 }

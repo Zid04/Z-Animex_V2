@@ -8,9 +8,12 @@ use App\Http\Requests\StoreUserMediaRequest;
 use App\Http\Requests\UpdateUserMediaRequest;
 use App\Http\Resources\UserMediaResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserMediaController extends Controller
 {
+    use AuthorizesRequests;
+    
     public function index()
     {
         $userMedia = Auth::user()

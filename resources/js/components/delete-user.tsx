@@ -3,7 +3,6 @@ import { useRef } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -14,6 +13,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function DeleteUser() {
@@ -73,8 +73,9 @@ export default function DeleteUser() {
                                             Password
                                         </Label>
 
-                                        <PasswordInput
+                                        <Input
                                             id="password"
+                                            type="password"
                                             name="password"
                                             ref={passwordInput}
                                             placeholder="Password"

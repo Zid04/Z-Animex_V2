@@ -11,9 +11,13 @@ use App\Models\Tag;
 use App\Services\MediaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 
 class MediaWebController extends Controller
 {
+    use AuthorizesRequests;
+    
     public function __construct(
         private MediaService $service
     ) {}
@@ -171,6 +175,7 @@ class MediaWebController extends Controller
 
         return inertia('media/edit', [
             'media' => new MediaResource($media),
+            'all_tags' => Tag::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 

@@ -4,21 +4,20 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class EpisodeResource extends JsonResource
+class SeasonResource extends JsonResource
 {
     public function toArray($request): array
     {
         return [
             'id' => $this->id,
-            'season_id' => $this->season_id,
+            'media_id' => $this->media_id,
             'number' => $this->number,
-            'title' => $this->title,
-            'duration' => $this->duration,
-            'video_url' => $this->video_url,
+'episodes_count' => $this->whenCounted('episodes'),
 
-            'watched' => auth()->check()
-                ? $this->isWatchedBy(auth()->id())
-                : false,
+            'episodes' => EpisodeResource::collection(
+                $this->whenLoaded('episodes')
+            ),
         ];
     }
 }
+    

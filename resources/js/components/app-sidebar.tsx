@@ -1,8 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
-import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
+import { LayoutGrid, Film, ListChecks, Heart, Star } from 'lucide-react';
 import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
@@ -13,8 +10,15 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
+
+/*
+|--------------------------------------------------------------------------
+| NAVIGATION ITEMS (Animex)
+|--------------------------------------------------------------------------
+*/
 
 const mainNavItems: NavItem[] = [
     {
@@ -22,42 +26,66 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-];
-
-const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
+        title: 'Médias',
+        href: '/media',
+        icon: Film,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Mes médias',
+        href: '/my-media',
+        icon: Heart,
+    },
+    {
+        title: 'Favoris',
+        href: '/favorites',
+        icon: Star,
+    },
+    {
+        title: 'Watchlist',
+        href: '/watchlist',
+        icon: ListChecks,
     },
 ];
 
 export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
+            {/* LOGO */}
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href={dashboard()} prefetch>
-                                <AppLogo />
+                                <img
+                                    src="/Images/logo.png"
+                                    alt="Z-Animex"
+                                    className="h-10 w-auto"
+                                />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
 
+            {/* MAIN NAVIGATION */}
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <SidebarMenu className="px-2 py-4">
+                    {mainNavItems.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton asChild tooltip={item.title}>
+                                <Link href={item.href} prefetch>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
             </SidebarContent>
 
+            {/* FOOTER */}
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

@@ -1,132 +1,202 @@
-import { Form, Head, Link, usePage } from '@inertiajs/react';
-import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/profile';
-import { send } from '@/routes/verification';
+import { getAvatarUrl } from '@/lib/avatar-utils';
 
-export default function Profile({
-    mustVerifyEmail,
-    status,
-}: {
+const defaultAvatars = [
+    "/Images/Avatars/Default/avatar-1.avif",
+    "/Images/Avatars/Default/avatar-2.png",
+    "/Images/Avatars/Default/avatar-3.png",
+    "/Images/Avatars/Default/avatar-4.webp",
+    "/Images/Avatars/Default/avatar-5.jpg",
+    "/Images/Avatars/Default/avatar-6.webp",
+    "/Images/Avatars/Default/avatar-7.avif",
+    "/Images/Avatars/Default/avatar-8.jpg",
+    "/Images/Avatars/Default/avatar-9.jpg",
+    "/Images/Avatars/Default/avatar-10.png",
+    "/Images/Avatars/Default/avatar-11.jpg",
+    "/Images/Avatars/Default/avatar-12.avif",
+];
+
+
+interface ProfileProps {
     mustVerifyEmail: boolean;
     status?: string;
-}) {
-    const { auth } = usePage().props;
+}
+
+export default function Profile({ mustVerifyEmail, status }: ProfileProps) {
+    const { auth } = usePage().props as any;
+
+    const { data, setData, patch, processing, errors, recentlySuccessful } = useForm({
+        name: auth.user.name ?? "",
+        email: auth.user.email ?? "",
+        pseudo: auth.user.pseudo ?? "",
+        avatar: null as File | string | null,
+    });
+
+    const [selectedAvatar, setSelectedAvatar] = useState<string | null>(
+        auth.user.avatar ?? null
+    );
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+
+        patch('/settings/profile', {
+            forceFormData: true,
+            preserveScroll: true,
+        });
+    }
 
     return (
         <>
             <Head title="Profile settings" />
 
-            <h1 className="sr-only">Profile settings</h1>
-
             <div className="space-y-6">
                 <Heading
                     variant="small"
                     title="Profile information"
-                    description="Update your name and email address"
+                    description="Update your name, email, pseudo and avatar"
                 />
 
-                <Form
-                    {...ProfileController.update.form()}
-                    options={{
-                        preserveScroll: true,
-                    }}
-                    className="space-y-6"
-                >
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                <form onSubmit={submit} encType="multipart/form-data" className="space-y-6">
 
-                                <Input
-                                    id="name"
-                                    className="mt-1 block w-full"
-                                    defaultValue={auth.user.name}
-                                    name="name"
-                                    required
-                                    autoComplete="name"
-                                    placeholder="Full name"
+                    {/* NAME */}
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Name</Label>
+
+                        <Input
+                            id="name"
+                            name="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            required
+                        />
+
+                        <InputError className="mt-2" message={errors.name} />
+                    </div>
+
+                    {/* EMAIL */}
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Email address</Label>
+
+                        <Input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                        />
+
+                        <InputError className="mt-2" message={errors.email} />
+                    </div>
+
+                    {/* PSEUDO */}
+                    <div className="grid gap-2">
+                        <Label htmlFor="pseudo">Pseudo</Label>
+
+                        <Input
+                            id="pseudo"
+                            name="pseudo"
+                            value={data.pseudo}
+                            onChange={(e) => setData('pseudo', e.target.value)}
+                            required
+                        />
+
+                        <InputError className="mt-2" message={errors.pseudo} />
+                    </div>
+
+                    {/* AVATAR PICKER */}
+                    <div className="grid gap-2">
+                        <Label>Choose an avatar</Label>
+
+                        <div className="grid grid-cols-6 gap-4">
+                            {defaultAvatars.map((url) => (
+                                <img
+                                    key={url}
+                                    src={url}
+                                    onClick={() => {
+                                        setSelectedAvatar(url);
+                                        setData("avatar", url);
+                                    }}
+                                    className={`h-16 w-16 rounded-full cursor-pointer border-2 object-cover transition
+                                        ${selectedAvatar === url
+                                            ? "border-blue-500 scale-105"
+                                            : "border-transparent hover:scale-105"
+                                        }`}
                                 />
+                            ))}
+                        </div>
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.name}
-                                />
-                            </div>
+                        <Label className="mt-4">Or upload your own</Label>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                        <Input
+                            id="avatar"
+                            name="avatar"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0] ?? null;
+                                setSelectedAvatar(null);
+                                setData("avatar", file);
+                            }}
+                        />
 
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    className="mt-1 block w-full"
-                                    defaultValue={auth.user.email}
-                                    name="email"
-                                    required
-                                    autoComplete="username"
-                                    placeholder="Email address"
-                                />
+                        <InputError className="mt-2" message={errors.avatar} />
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.email}
-                                />
-                            </div>
+                        {auth.user.avatar && (
+                            <img
+                                src={getAvatarUrl(auth.user.avatar)}
+                                alt="Avatar"
+                                className="mt-4 h-20 w-20 rounded-full object-cover"
+                            />
+                        )}
+                    </div>
 
-                            {mustVerifyEmail &&
-                                auth.user.email_verified_at === null && (
-                                    <div>
-                                        <p className="-mt-4 text-sm text-muted-foreground">
-                                            Your email address is unverified.{' '}
-                                            <Link
-                                                href={send()}
-                                                as="button"
-                                                className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                            >
-                                                Click here to resend the
-                                                verification email.
-                                            </Link>
-                                        </p>
-
-                                        {status ===
-                                            'verification-link-sent' && (
-                                            <div className="mt-2 text-sm font-medium text-green-600">
-                                                A new verification link has been
-                                                sent to your email address.
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    disabled={processing}
-                                    data-test="update-profile-button"
+                    {/* EMAIL VERIFICATION */}
+                    {mustVerifyEmail && auth.user.email_verified_at === null && (
+                        <div>
+                            <p className="-mt-4 text-sm text-muted-foreground">
+                                Your email address is unverified.{' '}
+                                <Link
+                                    href="/email/verification-notification"
+                                    as="button"
+                                    className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                                 >
-                                    Save
-                                </Button>
-                            </div>
-                        </>
+                                    Click here to resend the verification email.
+                                </Link>
+                            </p>
+
+                            {status === 'verification-link-sent' && (
+                                <div className="mt-2 text-sm font-medium text-green-600">
+                                    A new verification link has been sent to your email address.
+                                </div>
+                            )}
+                        </div>
                     )}
-                </Form>
+
+                    {/* SAVE BUTTON */}
+                    <div className="flex items-center gap-4">
+                        <Button type="submit" disabled={processing}>
+                            Save
+                        </Button>
+
+                        {(recentlySuccessful || status) && (
+                            <p className="text-sm text-green-600">
+                                {status ?? 'Saved'}
+                            </p>
+                        )}
+                    </div>
+                </form>
             </div>
 
             <DeleteUser />
         </>
     );
 }
-
-Profile.layout = {
-    breadcrumbs: [
-        {
-            title: 'Profile settings',
-            href: edit(),
-        },
-    ],
-};

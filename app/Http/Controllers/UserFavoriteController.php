@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\FavoriteResource;
+use App\Http\Resources\UserFavoriteResource;
 use App\Models\Media;
 
 use App\Services\UserFavoriteService;
@@ -32,7 +32,7 @@ class UserFavoriteController extends Controller
         
         return inertia('favorites/index', [
             'favorites' => [
-                'data' => FavoriteResource::collection($favorites->items())->resolve(),
+                'data' => UserFavoriteResource::collection($favorites->items())->resolve(),
                 'links' => $links,
             ],
         ]);

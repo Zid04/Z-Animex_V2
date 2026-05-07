@@ -10,9 +10,12 @@ use App\Models\Media;
 use App\Models\Season;
 use App\Models\Episode;
 use App\Services\EpisodeService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class EpisodeController extends Controller
 {
+    use AuthorizesRequests;
+    
     public function __construct(
         private EpisodeService $service
     ) {}

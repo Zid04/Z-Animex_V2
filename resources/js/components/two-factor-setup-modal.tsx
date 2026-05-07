@@ -181,7 +181,6 @@ function TwoFactorVerificationStep({
                                 onChange={setCode}
                                 disabled={processing}
                                 pattern={REGEXP_ONLY_DIGITS}
-                                autoFocus
                             >
                                 <InputOTPGroup>
                                     {Array.from(
@@ -286,37 +285,34 @@ export default function TwoFactorSetupModal({
         };
     }, [twoFactorEnabled, showVerificationStep]);
 
+    const handleModalNextStep = useCallback(() => {
+        if (requiresConfirmation) {
+            setShowVerificationStep(true);
+            return;
+        }
+
+        clearSetupData();
+        onClose();
+    }, [requiresConfirmation, clearSetupData, onClose]);
+
     const resetModalState = useCallback(() => {
         setShowVerificationStep(false);
-        clearSetupData();
-    }, [clearSetupData]);
+
+        if (twoFactorEnabled) {
+            clearSetupData();
+        }
+    }, [twoFactorEnabled, clearSetupData]);
+
+    useEffect(() => {
+        if (isOpen && !qrCodeSvg) {
+            fetchSetupData();
+        }
+    }, [isOpen, qrCodeSvg, fetchSetupData]);
 
     const handleClose = useCallback(() => {
         resetModalState();
         onClose();
     }, [onClose, resetModalState]);
-
-    const handleModalNextStep = useCallback(() => {
-        if (requiresConfirmation) {
-            setShowVerificationStep(true);
-
-            return;
-        }
-
-        handleClose();
-    }, [requiresConfirmation, handleClose]);
-
-    const fetchSetupDataRef = useRef(fetchSetupData);
-
-    useEffect(() => {
-        fetchSetupDataRef.current = fetchSetupData;
-    }, [fetchSetupData]);
-
-    useEffect(() => {
-        if (isOpen && !qrCodeSvg) {
-            fetchSetupDataRef.current();
-        }
-    }, [isOpen, qrCodeSvg]);
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -332,7 +328,7 @@ export default function TwoFactorSetupModal({
                 <div className="flex flex-col items-center space-y-5">
                     {showVerificationStep ? (
                         <TwoFactorVerificationStep
-                            onClose={handleClose}
+                            onClose={onClose}
                             onBack={() => setShowVerificationStep(false)}
                         />
                     ) : (

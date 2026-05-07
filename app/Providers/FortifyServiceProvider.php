@@ -33,7 +33,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
-
+  Fortify::username('login');
         //  Login via email OU pseudo
         Fortify::authenticateUsing([new AuthenticateUser, 'authenticate']);
     }

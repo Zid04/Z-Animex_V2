@@ -8,9 +8,11 @@ use App\Http\Resources\TagResource;
 use App\Models\Media;
 use App\Models\Tag;
 use App\Services\TagService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TagController extends Controller
 {
+    use AuthorizesRequests;
     public function __construct(
         private TagService $service
     ) {}

@@ -8,9 +8,12 @@ use App\Http\Requests\UpdateMediaRequest;
 use App\Http\Resources\MediaResource;
 use App\Services\MediaService;
 use App\Models\Media;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class MediaController extends Controller
 {
+    use AuthorizesRequests;
+    
     public function __construct(
         private MediaService $service
     ) {}

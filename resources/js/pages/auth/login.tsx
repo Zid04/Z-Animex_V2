@@ -35,18 +35,19 @@ export default function Login({
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
+                               <Label htmlFor="login">Email or username</Label>
+<Input
+    id="login"
+    type="text"
+    name="login"
+    required
+    autoFocus
+    tabIndex={1}
+    autoComplete="username"
+    placeholder="email@example.com or username"
+/>
+<InputError message={errors.login} />
+
                             </div>
 
                             <div className="grid gap-2">

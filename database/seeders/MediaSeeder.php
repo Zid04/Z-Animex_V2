@@ -35,6 +35,7 @@ $cover = $images['jpg']['image_url'] ?? null; // ← remettre
 Media::updateOrCreate(
     ['external_id' => (int) $data['mal_id']],
     [
+         'user_id'    => 1,
         'title'      => $data['title'],
         'type'       => $this->mapType($data['type']),
         'source'     => $data['source'] ?: null,
@@ -51,7 +52,7 @@ Media::updateOrCreate(
         'members'    => $data['members'] ? (int) $data['members'] : null,
         'favorites'  => $data['favorites'] ? (int) $data['favorites'] : null,
         'year'       => $data['year'] ? (int) $data['year'] : null,
-        'cover'      => $cover,                // ← remettre
+        'cover'      => $cover,                
         'images'     => $images,
         'studios'    => $studios,
         'genres'     => $genres,

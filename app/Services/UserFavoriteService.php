@@ -13,11 +13,10 @@ class UserFavoriteService
     | LIST USER FAVORITES
     |--------------------------------
     */
-    public function list(User $user): Collection
+    public function list(User $user)
     {
         return $user->favorites()
-            ->with('media')
-            ->get();
+            ->with('media');
     }
 
     /*

@@ -9,9 +9,11 @@ use App\Http\Resources\SeasonResource;
 use App\Models\Media;
 use App\Models\Season;
 use App\Services\SeasonService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class SeasonController extends Controller
 {
+    use AuthorizesRequests;
     public function __construct(
         private SeasonService $service
     ) {}
