@@ -39,7 +39,6 @@ class SeasonController extends Controller
 
     public function store(StoreSeasonRequest $request, Media $media)
     {
-        $this->authorize('update', $media);
 
         $season = $this->service->create(
             $media,

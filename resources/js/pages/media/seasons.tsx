@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
+
 
 type Episode = { id: number; number: number; title: string; watched: boolean };
 type Season  = { id: number; number: number; episodes: Episode[] };
@@ -14,7 +14,7 @@ type Props = {
 
 export default function MediaSeasons({ media, seasons }: Props) {
     return (
-        <AppLayout>
+        <>
             <Head title={`${media.title} — Saisons`} />
 
             <div className="max-w-4xl mx-auto py-6 px-4">
@@ -68,6 +68,6 @@ export default function MediaSeasons({ media, seasons }: Props) {
                     )}
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }

@@ -62,10 +62,17 @@ class Media extends Model
         return $this->hasMany(Season::class);
     }
 
-    public function episodes()
-    {
-        return $this->hasManyThrough(Episode::class, Season::class);
-    }
+  public function episodes()
+{
+    return $this->hasManyThrough(
+        Episode::class,
+        Season::class,
+        'media_id',  
+        'season_id',  
+        'id',         
+        'id'          
+    )->select('episodes.*'); 
+}
 
     public function ratings()
     {

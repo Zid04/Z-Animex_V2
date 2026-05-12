@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
+
 
 type Episode = {
     id: number;
@@ -19,12 +19,15 @@ type Props = {
 
 export default function EpisodesIndex({ media, season, episodes }: Props) {
     function handleDestroy(episodeId: number) {
-        if (!confirm('Supprimer cet épisode ?')) return;
+        if (!confirm('Supprimer cet épisode ?')) {
+            return;
+        }
+
         router.delete(`/episodes/${episodeId}`);
     }
 
     return (
-        <AppLayout>
+        <>
             <Head title={`Épisodes — Saison ${season.number} — ${media.title}`} />
 
             <div className="flex items-center justify-between mb-6">
@@ -76,6 +79,6 @@ export default function EpisodesIndex({ media, season, episodes }: Props) {
                     ))
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }

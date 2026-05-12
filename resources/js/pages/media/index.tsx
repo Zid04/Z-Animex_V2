@@ -9,7 +9,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import AppLayout from '@/layouts/app-layout';
+
 
 type Props = {
     media: any;
@@ -69,7 +69,7 @@ export default function MediaIndex({ media, filters, tags, years }: Props) {
     };
 
     return (
-        <AppLayout>
+        <>
             <Head title="Catalogue des médias" />
 
             <div className="mb-6 flex items-center justify-between">
@@ -268,6 +268,6 @@ export default function MediaIndex({ media, filters, tags, years }: Props) {
                     )}
                 </div>
             )}
-        </AppLayout>
+        </>
     );
 }

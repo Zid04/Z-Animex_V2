@@ -1,7 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
 
 type MediaItem = {
     id: number;
@@ -34,7 +33,7 @@ function paginationLabel(label: string) {
 
 export default function MyMedia({ media }: Props) {
     return (
-        <AppLayout>
+        <>
             <Head title="Mes médias" />
 
             <div className="mb-6 flex items-center justify-between">
@@ -132,6 +131,6 @@ export default function MyMedia({ media }: Props) {
                     )}
                 </div>
             )}
-        </AppLayout>
+        </>
     );
 }

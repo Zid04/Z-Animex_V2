@@ -2,7 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Heart } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
+
 
 type Props = {
     favorites: {
@@ -27,7 +27,7 @@ type Props = {
 
 export default function FavoritesPage({ favorites }: Props) {
     return (
-        <AppLayout>
+        <>
             <Head title="Mes favoris" />
 
             {/* HEADER */}
@@ -140,6 +140,6 @@ export default function FavoritesPage({ favorites }: Props) {
                     </div>
                 </>
             )}
-        </AppLayout>
+        </>
     );
 }

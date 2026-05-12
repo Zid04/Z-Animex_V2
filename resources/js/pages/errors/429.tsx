@@ -1,12 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { Zap } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
 
 type Props = {
     message?: string;
 };
 
-export default function TooManyRequests({ message = 'Vous avez effectué trop de requêtes. Veuillez réessayer dans quelques instants.' }: Props) {
+export default function TooManyRequests({
+    message = "Vous avez effectué trop de requêtes. Veuillez réessayer dans quelques instants."
+}: Props) {
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <Head title="Trop de requêtes" />
@@ -30,20 +32,17 @@ export default function TooManyRequests({ message = 'Vous avez effectué trop de
                 </p>
 
                 <div className="space-y-3">
-                    <Link href="/" className="block">
-                        
-                            Retour à la page d'accueil
-                        
-                    </Link>
+                    <Button asChild className="w-full">
+                        <Link href="/">Retour à la page d'accueil</Link>
+                    </Button>
 
-                    <button
-                        onClick={() => window.location.reload()}
+                    <Button
                         className="w-full"
+                        variant="secondary"
+                        onClick={() => window.location.reload()}
                     >
-                       
-                            Réessayer
-                        
-                    </button>
+                        Réessayer
+                    </Button>
                 </div>
             </div>
         </div>

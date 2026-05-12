@@ -6,9 +6,11 @@ use App\Http\Resources\UserFavoriteResource;
 use App\Models\Media;
 
 use App\Services\UserFavoriteService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserFavoriteController extends Controller
 {
+    use AuthorizesRequests;
     public function __construct(
         private UserFavoriteService $service
     ) {}

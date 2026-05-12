@@ -4,7 +4,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
+
 
 type Props = {
     season: { id: number; number: number };
@@ -31,7 +31,7 @@ export default function EpisodeEdit({ season, episode }: Props) {
     }
 
     return (
-        <AppLayout>
+        <>
             <Head title={`Modifier épisode ${episode.number} — Saison ${season.number}`} />
 
             <div className="max-w-xl mx-auto space-y-6">
@@ -91,6 +91,6 @@ export default function EpisodeEdit({ season, episode }: Props) {
                     </Button>
                 </form>
             </div>
-        </AppLayout>
+        </>
     );
 }

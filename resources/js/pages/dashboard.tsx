@@ -1,10 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-];
 
 /*
 |--------------------------------------------------------------------------
@@ -53,7 +48,7 @@ type DashboardProps = {
 
 export default function Dashboard({ stats, latest_media }: DashboardProps) {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Dashboard" />
 
             <div className="flex flex-col gap-6 p-4">
@@ -122,7 +117,7 @@ export default function Dashboard({ stats, latest_media }: DashboardProps) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
 

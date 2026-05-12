@@ -2,7 +2,6 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
 
 type MediaItem = {
     id: number;
@@ -65,13 +64,14 @@ export default function WatchlistIndex({ watchlist }: Props) {
     const counts = watchlist.data.reduce(
         (acc, item) => {
             acc[item.status] = (acc[item.status] ?? 0) + 1;
+
             return acc;
         },
         {} as Record<string, number>,
     );
 
     return (
-        <AppLayout>
+        <>
             <Head title="Ma Watchlist" />
 
             <div className="mx-auto max-w-5xl space-y-8">
@@ -151,7 +151,7 @@ export default function WatchlistIndex({ watchlist }: Props) {
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }
 

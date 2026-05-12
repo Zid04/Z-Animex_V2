@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProgressController;
+use App\Http\Controllers\UserProgressController;
 use App\Http\Controllers\UserFavoriteController;
 use App\Http\Controllers\UserMediaController;
 use App\Http\Controllers\UserRatingController;
@@ -71,8 +71,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('media/{media}/seasons/{season}/episodes/{episode}/progress')
         ->name('progress.')
         ->group(function () {
-            Route::post('/', [ProgressController::class, 'store'])->name('store');
-            Route::delete('/', [ProgressController::class, 'destroy'])->name('destroy');
+            Route::post('/', [UserProgressController::class, 'store'])->name('store');
+            Route::delete('/', [UserProgressController::class, 'destroy'])->name('destroy');
         });
 
     /*
@@ -102,19 +102,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
     Route::prefix('api')->name('api.')->group(function () {
 
-        Route::apiResource('media', MediaController::class);
-
-        Route::apiResource('media.seasons', SeasonController::class)->shallow();
+        Route::apiResource('media', MediaController::class)
+        ->parameters(['media' => 'media']);
+Route::apiResource('media.seasons', SeasonController::class)
+    ->shallow()
+    ->parameters(['media' => 'media']);
 
         Route::apiResource('media.seasons.episodes', EpisodeController::class)
             ->shallow()
-            ->except(['index', 'show']);
+            ->except(['index', 'show'])
+                ->parameters(['media' => 'media', 'seasons' => 'season', 'episodes' => 'episode']);
 
-        Route::prefix('media/{media}/comments')->name('comments.')->group(function () {
-            Route::get('/', [CommentController::class, 'index'])->name('index');
-            Route::post('/', [CommentController::class, 'store'])->name('store');
-            Route::patch('/{comment}', [CommentController::class, 'update'])->name('update');
-            Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('destroy');
+       Route::prefix('media/{media}/comment')->name('comment.')->group(function () {
+    Route::get('/', [CommentController::class, 'index'])->name('index');
+    Route::post('/', [CommentController::class, 'store'])->name('store');
+    Route::patch('/{comment}', [CommentController::class, 'update'])->name('update');
+    Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('destroy');
+
+
         });
 
         Route::prefix('media/{media}/tags')->name('tags.')->group(function () {

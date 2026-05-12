@@ -1,12 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { Lock } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
 
 type Props = {
     message?: string;
 };
 
-export default function Unauthorized({ message = 'Vous devez être connecté pour accéder à cette ressource.' }: Props) {
+export default function Unauthorized({
+    message = "Vous devez être connecté pour accéder à cette ressource."
+}: Props) {
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <Head title="Authentification requise" />
@@ -30,17 +32,13 @@ export default function Unauthorized({ message = 'Vous devez être connecté pou
                 </p>
 
                 <div className="space-y-3">
-                    <Link href="/login" className="block">
-                       
-                            Se connecter
-                       
-                    </Link>
+                    <Button asChild className="w-full">
+                        <Link href="/login">Se connecter</Link>
+                    </Button>
 
-                    <Link href="/" className="block">
-                        
-                            Retour à la page d'accueil
-                       
-                    </Link>
+                    <Button asChild variant="secondary" className="w-full">
+                        <Link href="/">Retour à la page d'accueil</Link>
+                    </Button>
                 </div>
             </div>
         </div>

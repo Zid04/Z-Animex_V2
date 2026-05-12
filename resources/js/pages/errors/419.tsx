@@ -1,12 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { Clock } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
 
 type Props = {
     message?: string;
 };
 
-export default function SessionExpired({ message = 'Votre session a expiré. Veuillez recharger la page et réessayer.' }: Props) {
+export default function SessionExpired({
+    message = "Votre session a expiré. Veuillez recharger la page et réessayer."
+}: Props) {
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <Head title="Session expirée" />
@@ -30,20 +32,17 @@ export default function SessionExpired({ message = 'Votre session a expiré. Veu
                 </p>
 
                 <div className="space-y-3">
-                    <Link href="/" className="block">
-                       
-                            Retour à la page d'accueil
-                       
-                    </Link>
+                    <Button asChild className="w-full">
+                        <Link href="/">Retour à la page d'accueil</Link>
+                    </Button>
 
-                    <button
-                        onClick={() => window.location.reload()}
+                    <Button
                         className="w-full"
+                        variant="secondary"
+                        onClick={() => window.location.reload()}
                     >
-                       
-                            Recharger la page
-                    
-                    </button>
+                        Recharger la page
+                    </Button>
                 </div>
             </div>
         </div>

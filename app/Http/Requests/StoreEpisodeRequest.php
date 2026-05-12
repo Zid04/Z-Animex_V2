@@ -9,7 +9,7 @@ class StoreEpisodeRequest extends FormRequest
     {
         return [
             'number' => 'required|integer|min:1',
-            'title' => 'nuAllable|string|max:255',
+            'title' => 'nullable|string|max:255',
             'duration' => 'nullable|integer',
             'video_url' => 'nullable|string',
         ];

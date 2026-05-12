@@ -1,12 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { Search } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
 
 type Props = {
     message?: string;
 };
 
-export default function NotFound({ message = 'La page que vous recherchez n\'existe pas ou a été supprimée.' }: Props) {
+export default function NotFound({
+    message = "La page que vous recherchez n'existe pas ou a été supprimée."
+}: Props) {
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <Head title="Page non trouvée" />
@@ -30,17 +32,13 @@ export default function NotFound({ message = 'La page que vous recherchez n\'exi
                 </p>
 
                 <div className="space-y-3">
-                    <Link href="/" className="block">
-                      
-                            Retour à la page d'accueil
-                      
-                    </Link>
+                    <Button asChild className="w-full">
+                        <Link href="/">Retour à la page d'accueil</Link>
+                    </Button>
 
-                    <Link href="/media" className="block">
-                     
-                            Consulter le catalogue
-                       
-                    </Link>
+                    <Button asChild variant="secondary" className="w-full">
+                        <Link href="/media">Consulter le catalogue</Link>
+                    </Button>
                 </div>
             </div>
         </div>

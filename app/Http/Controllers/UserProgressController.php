@@ -4,18 +4,19 @@ namespace App\Http\Controllers;
 use App\Models\Media;
 use App\Models\Season;
 use App\Models\Episode;
-use App\Services\ProgressService;
+use App\Services\UserProgressService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserProgressController extends Controller
 {
     use AuthorizesRequests;
+    
     public function store(
         Media $media,
         Season $season,
         Episode $episode,
-        ProgressService $progressService
+        UserProgressService $progressService
     ) {
         $this->authorize('view', $media);
 
@@ -31,7 +32,7 @@ class UserProgressController extends Controller
         Media $media,
         Season $season,
         Episode $episode,
-        ProgressService $progressService
+        UserProgressService $progressService
     ) {
         $this->authorize('view', $media);
 

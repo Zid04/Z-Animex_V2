@@ -55,8 +55,10 @@ class MediaController extends Controller
 
         $this->service->delete($media);
 
-        return response()->json([
-            'message' => 'Media deleted'
-        ]);
+       /** return response()->json([
+          **  'message' => 'Media deleted'
+        ** ]);**/
+          return redirect()->route('media.index') 
+        ->with('success', 'Média supprimé');
     }
 }

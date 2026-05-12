@@ -37,12 +37,14 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 403 - Accès refusé
-        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e, $request) {
-            return Inertia::render('errors/403', [
-                'message' => $e->getMessage() ?: "Vous n'avez pas accès à cette ressource."
-            ])->toResponse($request)->setStatusCode(403);
-        });
-
+$exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
+    if ($e->getStatusCode() === 403) {
+        return Inertia::render('errors/403', [
+            'message' => $e->getMessage() ?: "Vous n'avez pas accès à cette ressource."
+        ])->toResponse($request)->setStatusCode(403);
+    }
+    return null;
+});
         // 404 - Page non trouvée
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
             return Inertia::render('errors/404')
@@ -64,11 +66,22 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->setStatusCode(429);
         });
 
-        // 500 - Erreur serveur
-        $exceptions->render(function (\Throwable $e, $request) {
-            return Inertia::render('errors/500')
-                ->toResponse($request)
-                ->setStatusCode(500);
-        });
+       // 500 - Erreur serveur
+$exceptions->render(function (\Throwable $e, $request) {
+    // Ne pas intercepter les exceptions déjà gérées
+    if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpException ||
+    $e instanceof \Illuminate\Auth\AuthenticationException ||
+        $e instanceof \Illuminate\Auth\AuthenticationException ||
+        $e instanceof \Illuminate\Auth\Access\AuthorizationException ||
+        $e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException ||
+        $e instanceof \Illuminate\Session\TokenMismatchException ||
+        $e instanceof \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException) {
+        return null; //  laisser le bon handler prendre le relais
+    }
+
+    return Inertia::render('errors/500')
+        ->toResponse($request)
+        ->setStatusCode(500);
+});
     })
     ->create();

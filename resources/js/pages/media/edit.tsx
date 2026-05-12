@@ -1,12 +1,12 @@
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-
+import { CharacterCounter } from '@/components/character-counter';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
-import { CharacterCounter } from '@/components/character-counter';
+
+
 
 type Tag = { id: number; name: string };
 
@@ -68,17 +68,9 @@ export default function MediaEdit({ media, all_tags }: Props) {
         );
     }
 
-    function toggleTag(id: number) {
-        setData(
-            'tags',
-            data.tags.includes(id)
-                ? data.tags.filter((t) => t !== id)
-                : [...data.tags, id],
-        );
-    }
 
     return (
-        <AppLayout>
+        <>
             <Head title={`Modifier : ${media.title}`} />
 
             <div className="mx-auto max-w-xl space-y-6">
@@ -283,6 +275,6 @@ export default function MediaEdit({ media, all_tags }: Props) {
                     </Button>
                 </form>
             </div>
-        </AppLayout>
+        </>
     );
 }

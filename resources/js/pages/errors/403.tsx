@@ -1,12 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { AlertCircle } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
 
 type Props = {
     message?: string;
 };
 
-export default function Forbidden({ message = 'Vous n\'avez pas accès à cette ressource.' }: Props) {
+export default function Forbidden({
+    message = "Vous n'avez pas accès à cette ressource."
+}: Props) {
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <Head title="Accès refusé" />
@@ -30,17 +32,13 @@ export default function Forbidden({ message = 'Vous n\'avez pas accès à cette 
                 </p>
 
                 <div className="space-y-3">
-                    <Link href="/" className="block">
-                       
-                            Retour à la page d'accueil
-                       
-                    </Link>
+                    <Button asChild className="w-full">
+                        <Link href="/">Retour à la page d'accueil</Link>
+                    </Button>
 
-                    <Link href="/media" className="block">
-                     
-                            Voir le catalogue
-                     
-                    </Link>
+                    <Button asChild variant="secondary" className="w-full">
+                        <Link href="/media">Voir le catalogue</Link>
+                    </Button>
                 </div>
             </div>
         </div>

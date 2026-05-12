@@ -154,7 +154,7 @@ class MediaWebController extends Controller
                 ->exists(),
             'user_media'  => $user->userMedia()
                 ->where('media_id', $media->id)
-                ->first()?->only(['status', 'progress']),
+                ->first()?->only(['id','status', 'progress']),
             'auth'        => ['user' => ['id' => $user->id]],
             'can'         => [
                 'update' => $user->can('update', $media),

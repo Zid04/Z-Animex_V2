@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { EpisodeProgressCheckbox } from '@/components/episode-progress-checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import AppLayout from '@/layouts/app-layout';
+
 import { apiDelete, apiPost } from '@/lib/api';
 
 /*
@@ -21,6 +21,15 @@ type Comment = {
     user: { id: number; name: string };
 };
 type Tag = { id: number; name: string };
+
+const STATUS_LABELS: Record<string, string> = {
+    watching: 'En cours',
+    completed: 'Terminé',
+    planned: 'Planifié',
+    dropped: 'Abandonné',
+};
+
+const ALL_STATUSES = ['watching', 'completed', 'planned', 'dropped'] as const;
 
 type Props = {
     media: {
@@ -48,7 +57,7 @@ type Props = {
     };
     user_rating?: number | null;
     is_favorite?: boolean;
-    user_media?: { status: string; progress: number } | null;
+    user_media?: { id: number; status: string; progress: number } | null;
     auth: { user: { id: number } };
 };
 
@@ -64,12 +73,12 @@ export default function MediaShow({
     progress,
     user_rating,
     is_favorite,
+    user_media,
     auth,
 }: Props) {
-    // Vérification de sécurité : si media n'existe pas ou n'a pas d'ID, afficher une erreur
     if (!media || !media.id) {
         return (
-            <AppLayout>
+            <>
                 <Head title="Erreur - Média non trouvé" />
                 <div className="flex items-center justify-center min-h-screen">
                     <div className="text-center">
@@ -82,7 +91,7 @@ export default function MediaShow({
                         </Link>
                     </div>
                 </div>
-            </AppLayout>
+            </>
         );
     }
 
@@ -102,10 +111,15 @@ export default function MediaShow({
     const seasonForm = useForm({ number: '' });
     const ratingForm = useForm({ rating: user_rating ? String(user_rating) : '5' });
     const tagForm = useForm({ tag_id: '' });
+    const watchlistForm = useForm({
+        media_id: media.id,
+        status: 'planned' as typeof ALL_STATUSES[number],
+        progress: 0,
+    });
 
     function submitComment(e: React.FormEvent) {
         e.preventDefault();
-        commentForm.post(`/api/media/${media.id}/comments`, {
+        commentForm.post(`/api/media/${media.id}/comment`, {
             onSuccess: () => commentForm.reset(),
         });
     }
@@ -122,14 +136,14 @@ export default function MediaShow({
 
     function submitRating(e: React.FormEvent) {
         e.preventDefault();
-        
-        // Validation côté client
         const rating = ratingForm.data.rating;
+
         if (!rating || isNaN(Number(rating)) || Number(rating) < 1 || Number(rating) > 10) {
             alert('Veuillez entrer une note valide entre 1 et 10');
+
             return;
         }
-        
+
         ratingForm.post(`/media/${media.id}/ratings`, {
             onError: (errors) => {
                 console.error('Erreur lors de la soumission:', errors);
@@ -143,16 +157,25 @@ export default function MediaShow({
     }
 
     function deleteMedia() {
-        if (!media?.id) return;
-        if (confirm('Supprimer ce média ?')) {
-            router.delete(`/api/media/${media.id}`, {
-                onSuccess: () => router.visit('/media'),
-            });
+        if (!media || !media.id){
+             return;
         }
+
+        if (!confirm('Supprimer ce média ?')){
+            return;
+        }
+
+        router.delete(`/api/media/${media.id}`, {
+            onSuccess: () => router.visit('/media'),
+            onError: (errors) => console.error('Delete error', errors),
+        });
     }
 
     function toggleFavorite() {
-        if (!media?.id) return;
+        if (!media?.id) {
+            return;
+        }
+        
         if (is_favorite) {
             router.delete(`/favorites/${media.id}`);
         } else {
@@ -160,35 +183,71 @@ export default function MediaShow({
         }
     }
 
+    function addToWatchlist() {
+        watchlistForm.post('/watchlist', {
+            onSuccess: () => router.reload(),
+        });
+    }
+
+    function removeFromWatchlist() {
+        if (!user_media?.id){
+             return;
+}
+
+        if (!confirm('Retirer ce média de votre watchlist ?')) {
+            return;
+        }
+
+        router.delete(`/watchlist/${user_media.id}`, {
+            onSuccess: () => router.reload(),
+        });
+    }
+
     function submitTagAttach(e: React.FormEvent) {
         e.preventDefault();
-        if (!media?.id) return;
+
+        if (!media?.id){
+
+             return;
+        }
+
         tagForm.post(`/api/media/${media.id}/tags`, {
             onSuccess: () => tagForm.reset(),
         });
     }
 
     function detachTag(tagId: number) {
-        if (!media?.id) return;
+        if (!media?.id) { 
+            return;
+           }
+
         router.delete(`/api/media/${media.id}/tags/${tagId}`);
     }
 
     function deleteComment(commentId: number) {
-        if (!media?.id) return;
-        router.delete(`/api/media/${media.id}/comments/${commentId}`);
+        if (!media || !media.id){
+            return;
+        }
+
+        if (!confirm('Supprimer ce commentaire ?')) {
+            return;
+        }
+
+        router.delete(`/api/media/${media.id}/comment/${commentId}`, {
+            onSuccess: () => console.log('Commentaire supprimé'),
+            onError: (errors) => console.error('Erreur suppression commentaire', errors),
+        });
     }
 
     return (
-        <AppLayout>
+        <>
             <Head title={media.title} />
 
             <div className="mx-auto max-w-3xl space-y-10">
                 {/* HEADER */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-semibold">
-                            {media.title}
-                        </h1>
+                        <h1 className="text-3xl font-semibold">{media.title}</h1>
                         <p className="mt-1 text-sm text-muted-foreground">
                             {media.type}
                             {media.year && ` • ${media.year}`}
@@ -198,16 +257,10 @@ export default function MediaShow({
                     <div className="flex shrink-0 gap-2">
                         {media?.id && (
                             <Link href={`/media/${media.id}/edit`}>
-                                <Button variant="outline" size="sm">
-                                    Modifier
-                                </Button>
+                                <Button variant="outline" size="sm">Modifier</Button>
                             </Link>
                         )}
-                        <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={deleteMedia}
-                        >
+                        <Button variant="destructive" size="sm" onClick={deleteMedia}>
                             Supprimer
                         </Button>
                     </div>
@@ -260,62 +313,77 @@ export default function MediaShow({
                     <form onSubmit={submitTagAttach} className="flex gap-2">
                         <select
                             value={tagForm.data.tag_id}
-                            onChange={(e) =>
-                                tagForm.setData('tag_id', e.target.value)
-                            }
+                            onChange={(e) => tagForm.setData('tag_id', e.target.value)}
                             className="flex-1 rounded border bg-background p-2 text-foreground"
                         >
                             <option value="">Sélectionner un tag</option>
                             {all_tags.map((tag) => (
-                                <option key={tag.id} value={tag.id}>
-                                    {tag.name}
-                                </option>
+                                <option key={tag.id} value={tag.id}>{tag.name}</option>
                             ))}
                         </select>
-                        <Button type="submit" disabled={tagForm.processing}>
-                            Ajouter
-                        </Button>
+                        <Button type="submit" disabled={tagForm.processing}>Ajouter</Button>
                     </form>
                 </div>
 
-                {/* FAVORIS */}
-                <div>
+                {/* FAVORIS + WATCHLIST */}
+                <div className="flex flex-wrap gap-3">
                     <Button
                         variant={is_favorite ? 'destructive' : 'secondary'}
                         onClick={toggleFavorite}
                     >
-                        {is_favorite
-                            ? 'Retirer des favoris'
-                            : 'Ajouter aux favoris'}
+                        {is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                     </Button>
+
+                    {user_media ? (
+                        <div className="flex items-center gap-2">
+                            <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                                Watchlist : {STATUS_LABELS[user_media.status] ?? user_media.status}
+                            </span>
+                            <Button variant="destructive" size="sm" onClick={removeFromWatchlist}>
+                                Retirer
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={watchlistForm.data.status}
+                                onChange={(e) =>
+                                    watchlistForm.setData('status', e.target.value as typeof ALL_STATUSES[number])
+                                }
+                                className="rounded border bg-background p-2 text-sm text-foreground"
+                            >
+                                {ALL_STATUSES.map((s) => (
+                                    <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                                ))}
+                            </select>
+                            <Button
+                                variant="secondary"
+                                onClick={addToWatchlist}
+                                disabled={watchlistForm.processing}
+                            >
+                                + Watchlist
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {/* NOTE */}
                 <div className="space-y-3">
                     <h2 className="text-lg font-semibold">Votre note</h2>
-                    <form
-                        onSubmit={submitRating}
-                        className="flex items-center gap-3"
-                    >
+                    <form onSubmit={submitRating} className="flex items-center gap-3">
                         <Input
                             type="number"
                             min="1"
                             max="10"
                             value={ratingForm.data.rating}
-                            onChange={(e) =>
-                                ratingForm.setData('rating', e.target.value)
-                            }
+                            onChange={(e) => ratingForm.setData('rating', e.target.value)}
                             className="w-20"
                         />
                         <Button type="submit" disabled={ratingForm.processing}>
                             Enregistrer
                         </Button>
                         {user_rating && (
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                onClick={deleteRating}
-                            >
+                            <Button type="button" variant="destructive" onClick={deleteRating}>
                                 Retirer
                             </Button>
                         )}
@@ -333,9 +401,7 @@ export default function MediaShow({
                     <form onSubmit={submitComment} className="space-y-3">
                         <textarea
                             value={commentForm.data.content}
-                            onChange={(e) =>
-                                commentForm.setData('content', e.target.value)
-                            }
+                            onChange={(e) => commentForm.setData('content', e.target.value)}
                             className="w-full rounded border bg-background p-2 text-foreground"
                             placeholder="Écrire un commentaire..."
                             rows={3}
@@ -346,21 +412,14 @@ export default function MediaShow({
                     </form>
                     <div className="space-y-3">
                         {comments.map((comment) => (
-                            <div
-                                key={comment.id}
-                                className="space-y-1 rounded border p-3"
-                            >
-                                <p className="text-sm font-semibold">
-                                    {comment.user.name}
-                                </p>
+                            <div key={comment.id} className="space-y-1 rounded border p-3">
+                                <p className="text-sm font-semibold">{comment.user.name}</p>
                                 <p className="text-sm">{comment.content}</p>
                                 {comment.user.id === auth.user.id && (
                                     <Button
                                         variant="destructive"
                                         size="sm"
-                                        onClick={() =>
-                                            deleteComment(comment.id)
-                                        }
+                                        onClick={() => deleteComment(comment.id)}
                                     >
                                         Supprimer
                                     </Button>
@@ -375,21 +434,16 @@ export default function MediaShow({
                     <div className="space-y-6">
                         {progress.episodes_total > 0 && (
                             <div className="space-y-2">
-                                <h2 className="text-lg font-semibold">
-                                    Progression
-                                </h2>
+                                <h2 className="text-lg font-semibold">Progression</h2>
                                 <div className="flex items-center gap-3">
                                     <div className="h-3 flex-1 overflow-hidden rounded bg-muted">
                                         <div
                                             className="h-full bg-primary transition-all"
-                                            style={{
-                                                width: `${progress.percent}%`,
-                                            }}
+                                            style={{ width: `${progress.percent}%` }}
                                         />
                                     </div>
                                     <span className="text-sm font-semibold">
-                                        {progress.episodes_watched}/
-                                        {progress.episodes_total}
+                                        {progress.episodes_watched}/{progress.episodes_total}
                                     </span>
                                 </div>
                             </div>
@@ -397,36 +451,24 @@ export default function MediaShow({
 
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-semibold">
-                                    Saisons
-                                </h2>
+                                <h2 className="text-lg font-semibold">Saisons</h2>
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() =>
-                                        setShowAddSeason(!showAddSeason)
-                                    }
+                                    onClick={() => setShowAddSeason(!showAddSeason)}
                                 >
                                     {showAddSeason ? 'Annuler' : '+ Saison'}
                                 </Button>
                             </div>
 
                             {showAddSeason && (
-                                <form
-                                    onSubmit={submitSeason}
-                                    className="space-y-3 rounded border p-4"
-                                >
+                                <form onSubmit={submitSeason} className="space-y-3 rounded border p-4">
                                     <Input
                                         type="number"
                                         placeholder="Numéro de la saison"
                                         min="1"
                                         value={seasonForm.data.number}
-                                        onChange={(e) =>
-                                            seasonForm.setData(
-                                                'number',
-                                                e.target.value,
-                                            )
-                                        }
+                                        onChange={(e) => seasonForm.setData('number', e.target.value)}
                                         required
                                     />
                                     <Button type="submit">Créer</Button>
@@ -435,33 +477,23 @@ export default function MediaShow({
 
                             <div className="space-y-3">
                                 {seasons.length === 0 ? (
-                                    <p className="text-muted-foreground">
-                                        Aucune saison
-                                    </p>
+                                    <p className="text-muted-foreground">Aucune saison</p>
                                 ) : (
                                     seasons.map((season) => (
                                         <SeasonBlock
                                             key={season.id}
                                             season={season}
                                             mediaId={media.id}
-                                            expanded={
-                                                expandedSeason === season.id
-                                            }
+                                            expanded={expandedSeason === season.id}
                                             onToggle={() =>
                                                 setExpandedSeason(
-                                                    expandedSeason === season.id
-                                                        ? null
-                                                        : season.id,
+                                                    expandedSeason === season.id ? null : season.id,
                                                 )
                                             }
-                                            showAddEpisode={
-                                                showAddEpisode === season.id
-                                            }
+                                            showAddEpisode={showAddEpisode === season.id}
                                             onToggleAddEpisode={() =>
                                                 setShowAddEpisode(
-                                                    showAddEpisode === season.id
-                                                        ? null
-                                                        : season.id,
+                                                    showAddEpisode === season.id ? null : season.id,
                                                 )
                                             }
                                         />
@@ -472,7 +504,7 @@ export default function MediaShow({
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }
 
@@ -513,7 +545,10 @@ function SeasonBlock({
     }
 
     async function deleteEpisode(episodeId: number) {
-        if (!confirm('Supprimer cet épisode ?')) return;
+        if (!confirm('Supprimer cet épisode ?')){ 
+            return;
+        }
+
         await apiDelete(`/api/episodes/${episodeId}`);
         router.reload();
     }
@@ -526,8 +561,7 @@ function SeasonBlock({
             >
                 <span className="font-semibold">Saison {season.number}</span>
                 <span className="text-sm text-muted-foreground">
-                    {season.episodes.length} épisode
-                    {season.episodes.length > 1 ? 's' : ''}
+                    {season.episodes.length} épisode{season.episodes.length > 1 ? 's' : ''}
                 </span>
             </button>
 
@@ -553,9 +587,7 @@ function SeasonBlock({
                                 onChange={(e) => setTitle(e.target.value)}
                             />
                             <div className="flex gap-2">
-                                <Button type="submit" size="sm">
-                                    Créer
-                                </Button>
+                                <Button type="submit" size="sm">Créer</Button>
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -582,13 +614,7 @@ function SeasonBlock({
                                     storeUrl={`/media/${mediaId}/seasons/${season.id}/episodes/${episode.id}/progress`}
                                     destroyUrl={`/media/${mediaId}/seasons/${season.id}/episodes/${episode.id}/progress`}
                                 />
-                                <span
-                                    className={
-                                        episode.watched
-                                            ? 'text-muted-foreground line-through'
-                                            : ''
-                                    }
-                                >
+                                <span className={episode.watched ? 'text-muted-foreground line-through' : ''}>
                                     <strong>Ép. {episode.number}</strong>
                                     {episode.title && ` : ${episode.title}`}
                                 </span>
@@ -604,11 +630,7 @@ function SeasonBlock({
                     ))}
 
                     {!showAddEpisode && (
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={onToggleAddEpisode}
-                        >
+                        <Button variant="secondary" size="sm" onClick={onToggleAddEpisode}>
                             + Ajouter un épisode
                         </Button>
                     )}
