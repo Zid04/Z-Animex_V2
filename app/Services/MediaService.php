@@ -12,52 +12,56 @@ class MediaService
     | LIST MEDIA WITH FILTERS
     |--------------------------------
     */
-    public function index(Request $request)
-    {
-        $query = Media::query()
-            ->with('tags');
+   public function index(Request $request)
+{
+    $query = Media::query()
+        ->with('tags')
+        ->where(function ($q) {
+            $q->where('is_public', false)
+              ->orWhere('user_id', auth()->id());
+        });
 
-        // Search
-        if ($search = $request->get('search')) {
-            $query->where('title', 'like', "%{$search}%");
-        }
-
-        // Type filter
-        if ($type = $request->get('type')) {
-            $query->where('type', $type);
-        }
-
-        // Year filter
-        if ($year = $request->get('year')) {
-            $query->where('year', $year);
-        }
-
-        // Status filter
-        if ($status = $request->get('status')) {
-            $query->where('status', $status);
-        }
-
-        // Airing filter
-        if ($request->has('airing')) {
-            $query->where('airing', $request->boolean('airing'));
-        }
-
-        // Sorting
-        if ($sort = $request->get('sort')) {
-            match ($sort) {
-                'score'       => $query->orderByDesc('score'),
-                'rank'        => $query->orderBy('rank'),
-                'popularity'  => $query->orderBy('popularity'),
-                'newest'      => $query->latest(),
-                'oldest'      => $query->oldest(),
-                default       => $query->latest(),
-            };
-        } else {
-            $query->latest();
-        }
-
-        return $query->paginate(20);
+    // Search
+    if ($search = $request->get('search')) {
+        $query->where('title', 'like', "%{$search}%");
     }
+
+    // Type filter
+    if ($type = $request->get('type')) {
+        $query->where('type', $type);
+    }
+
+    // Year filter
+    if ($year = $request->get('year')) {
+        $query->where('year', $year);
+    }
+
+    // Status filter
+    if ($status = $request->get('status')) {
+        $query->where('status', $status);
+    }
+
+    // Airing filter
+    if ($request->has('airing')) {
+        $query->where('airing', $request->boolean('airing'));
+    }
+
+    // Sorting
+    if ($sort = $request->get('sort')) {
+        match ($sort) {
+            'score'       => $query->orderByDesc('score'),
+            'rank'        => $query->orderBy('rank'),
+            'popularity'  => $query->orderBy('popularity'),
+            'newest'      => $query->latest(),
+            'oldest'      => $query->oldest(),
+            default       => $query->latest(),
+        };
+    } else {
+        $query->latest();
+    }
+
+    return $query->paginate(20);
+}
 
     /*
     |--------------------------------
@@ -66,6 +70,11 @@ class MediaService
     */
     public function show(Media $media): Media
     {
+
+    if ($media->is_private && $media->user_id !== auth()->id()) {
+        abort(404);
+    }
+    
         return $media->load([
             'seasons.episodes',
             'tags',

@@ -26,6 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+        
+         $middleware->api(prepend: [
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
@@ -75,7 +79,8 @@ $exceptions->render(function (\Throwable $e, $request) {
         $e instanceof \Illuminate\Auth\Access\AuthorizationException ||
         $e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException ||
         $e instanceof \Illuminate\Session\TokenMismatchException ||
-        $e instanceof \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException) {
+        $e instanceof \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException||
+         $e instanceof \Illuminate\Validation\ValidationException) {
         return null; //  laisser le bon handler prendre le relais
     }
 

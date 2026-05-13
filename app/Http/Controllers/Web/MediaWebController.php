@@ -28,44 +28,58 @@ class MediaWebController extends Controller
     |--------------------------------
     */
 
-    public function index(Request $request)
-    {
-        $query = Media::query()
-            ->with('tags')
-            ->when($request->search, fn($q) =>
-                $q->where('title', 'like', '%' . $request->search . '%')
-            )
-            ->when($request->type, fn($q) =>
-                $q->where('type', $request->type)
-            )
-            ->when($request->year, fn($q) =>
-                $q->where('year', $request->year)
-            )
-            ->when($request->sort, fn($q) =>
-                match ($request->sort) {
-                    'score'      => $q->orderByDesc('score'),
-                    'newest'     => $q->orderByDesc('year'),
-                    'oldest'     => $q->orderBy('year'),
-                    'rank'       => $q->orderBy('rank'),
-                    'popularity' => $q->orderByDesc('popularity'),
-                    default      => $q,
-                }
-            );
+   public function index(Request $request)
+{
+    $user = Auth::user();
 
-        return inertia('media/index', [
-            'media'   => MediaResource::collection(
-                $query->paginate(20)->withQueryString()
-            ),
-            'filters' => $request->only(['search', 'type', 'year', 'sort', 'status']),
-            'tags'    => Tag::select('id', 'name')->orderBy('name')->get(),
-            'years'   => Media::select('year')
-                ->whereNotNull('year')
-                ->distinct()
-                ->orderByDesc('year')
-                ->pluck('year'),
-        ]);
-    }
+    $query = Media::query()
+        ->with('tags')
+        ->where(function ($q) use ($user) {
+            // Médias publics et approuvés
+            $q->where(function ($q) {
+                $q->where('approved', true)
+                  ->where('is_public', true);
+            })
+            // OU médias dont l'utilisateur est le créateur
+            ->orWhere('user_id', $user->id)
+            // OU médias dans la watchlist de l'utilisateur
+            ->orWhereHas('userMedia', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        })
+        ->when($request->search, fn($q) =>
+            $q->where('title', 'like', '%' . $request->search . '%')
+        )
+        ->when($request->type, fn($q) =>
+            $q->where('type', $request->type)
+        )
+        ->when($request->year, fn($q) =>
+            $q->where('year', $request->year)
+        )
+        ->when($request->sort, fn($q) =>
+            match ($request->sort) {
+                'score'      => $q->orderByDesc('score'),
+                'newest'     => $q->orderByDesc('year'),
+                'oldest'     => $q->orderBy('year'),
+                'rank'       => $q->orderBy('rank'),
+                'popularity' => $q->orderByDesc('popularity'),
+                default      => $q,
+            }
+        );
 
+    return inertia('media/index', [
+        'media'   => MediaResource::collection(
+            $query->paginate(20)->withQueryString()
+        ),
+        'filters' => $request->only(['search', 'type', 'year', 'sort', 'status']),
+        'tags'    => Tag::select('id', 'name')->orderBy('name')->get(),
+        'years'   => Media::select('year')
+            ->whereNotNull('year')
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year'),
+    ]);
+}
     /*
     |--------------------------------
     | CREATE
