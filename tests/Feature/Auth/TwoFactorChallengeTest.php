@@ -41,8 +41,9 @@ class TwoFactorChallengeTest extends TestCase
             'two_factor_confirmed_at' => now(),
         ])->save();
 
-        $this->post(route('login'), [
-            'email' => $user->email,
+        // Fortify::username('login') → champ 'login', pas 'email'
+        $this->post(route('login.store'), [
+            'login'    => $user->email,
             'password' => 'password',
         ]);
 

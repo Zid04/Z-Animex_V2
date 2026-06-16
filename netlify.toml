@@ -1,0 +1,25 @@
+# Netlify héberge les assets Vite compilés (JS/CSS) en tant que CDN.
+# Laravel utilise ces assets via ASSET_URL=https://<ton-site>.netlify.app
+# dans le .env de Vercel.
+
+[build]
+  command = "npm ci && npm run build"
+  publish = "public/build"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Cache long terme pour les assets versionnés par Vite (hash dans le nom de fichier)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    X-Content-Type-Options = "nosniff"
+
+# En-têtes de sécurité généraux
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Content-Type-Options = "nosniff"

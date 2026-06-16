@@ -28,6 +28,7 @@ class PasswordConfirmationTest extends TestCase
     {
         $response = $this->get(route('password.confirm'));
 
-        $response->assertRedirect(route('login'));
+        // bootstrap/app.php intercepte AuthenticationException → 401 Inertia (pas de redirect)
+        $response->assertStatus(401);
     }
 }

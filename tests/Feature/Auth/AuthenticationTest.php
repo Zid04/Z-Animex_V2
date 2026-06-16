@@ -23,8 +23,9 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
+        // Fortify::username('login') → le champ s'appelle 'login', pas 'email'
         $response = $this->post(route('login.store'), [
-            'email' => $user->email,
+            'login'    => $user->email,
             'password' => 'password',
         ]);
 
@@ -37,20 +38,21 @@ class AuthenticationTest extends TestCase
         $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
         Features::twoFactorAuthentication([
-            'confirm' => true,
+            'confirm'         => true,
             'confirmPassword' => true,
         ]);
 
         $user = User::factory()->create();
 
         $user->forceFill([
-            'two_factor_secret' => encrypt('test-secret'),
+            'two_factor_secret'         => encrypt('test-secret'),
             'two_factor_recovery_codes' => encrypt(json_encode(['code1', 'code2'])),
-            'two_factor_confirmed_at' => now(),
+            'two_factor_confirmed_at'   => now(),
         ])->save();
 
-        $response = $this->post(route('login'), [
-            'email' => $user->email,
+        // route('login') génère /login — en POST cela atteint login.store (AuthenticatedSessionController@store)
+        $response = $this->post(route('login.store'), [
+            'login'    => $user->email,
             'password' => 'password',
         ]);
 
@@ -64,7 +66,7 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $this->post(route('login.store'), [
-            'email' => $user->email,
+            'login'    => $user->email,
             'password' => 'wrong-password',
         ]);
 
@@ -85,10 +87,18 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
+        // Remplir le quota (Limit::perMinute(5)) avec 5 vraies tentatives.
+        // ThrottleRequests::hit() incrémente via RateLimiter::hit(), pas ::increment().
+        // Après 5 hits, la 6e requête reçoit 429.
+        for ($i = 0; $i < 5; $i++) {
+            $this->post(route('login.store'), [
+                'login'    => $user->email,
+                'password' => 'wrong-password',
+            ]);
+        }
 
         $response = $this->post(route('login.store'), [
-            'email' => $user->email,
+            'login'    => $user->email,
             'password' => 'wrong-password',
         ]);
 

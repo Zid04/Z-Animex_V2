@@ -25,11 +25,13 @@ class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
+        // ProfileUpdateRequest exige 'pseudo' via ProfileValidationRules
         $response = $this
             ->actingAs($user)
             ->patch(route('profile.update'), [
-                'name' => 'Test User',
-                'email' => 'test@example.com',
+                'name'   => 'Test User',
+                'pseudo' => 'testuser',
+                'email'  => 'test@example.com',
             ]);
 
         $response
@@ -47,11 +49,13 @@ class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
+        // ProfileUpdateRequest exige 'pseudo' via ProfileValidationRules
         $response = $this
             ->actingAs($user)
             ->patch(route('profile.update'), [
-                'name' => 'Test User',
-                'email' => $user->email,
+                'name'   => 'Test User',
+                'pseudo' => $user->pseudo,
+                'email'  => $user->email,
             ]);
 
         $response
