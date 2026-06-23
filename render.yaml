@@ -51,6 +51,8 @@ services:
         value: database
       - key: QUEUE_CONNECTION
         value: database
+      - key: TELESCOPE_ENABLED
+        value: "false"
     # disk nécessite un plan payant (Starter $7/mo) — retirer si plan gratuit
     # disk:
     #   name: z-animex-storage
