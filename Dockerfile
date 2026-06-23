@@ -1,47 +1,37 @@
-# ── Stage 1 : Composer (prod deps only) ─────────────────────────────────────
-FROM composer:2 AS vendor
-WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install \
-    --no-dev \
-    --no-scripts \
-    --no-autoloader \
-    --prefer-dist \
-    --ignore-platform-reqs
-COPY . .
-RUN composer dump-autoload --optimize --classmap-authoritative
+# ── Stage 1 : Build (PHP 8.4 + Node 22) ─────────────────────────────────────
+# serversideup inclut PHP 8.4. On y installe Node 22 pour que
+# wayfinder puisse appeler "php artisan" pendant "npm run build".
+FROM serversideup/php:8.4-fpm-nginx AS builder
+USER root
 
-# ── Stage 2 : Build Vite assets ──────────────────────────────────────────────
-# PHP requis ici car wayfinder appelle "php artisan" pendant vite build
-FROM node:22-alpine AS assets
-RUN apk add --no-cache \
-    php83 \
-    php83-phar \
-    php83-mbstring \
-    php83-xml \
-    php83-dom \
-    php83-tokenizer \
-    php83-simplexml \
-    php83-xmlwriter \
-    php83-ctype \
-    php83-json \
-    php83-openssl
-RUN ln -s /usr/bin/php83 /usr/bin/php
-
-WORKDIR /app
-COPY --from=vendor /app ./
-RUN cp .env.example .env && php artisan key:generate
-RUN npm ci
-RUN npm run build
-
-# ── Stage 3 : Production image ───────────────────────────────────────────────
-FROM serversideup/php:8.4-fpm-nginx
+RUN apt-get update \
+    && apt-get install -y curl \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
 
-COPY --from=vendor /app/vendor ./vendor
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
 COPY . .
-COPY --from=assets /app/public/build ./public/build
+RUN composer dump-autoload --optimize --classmap-authoritative
+
+# .env temporaire nécessaire pour que artisan (wayfinder) démarre
+RUN cp .env.example .env && php artisan key:generate
+
+RUN npm ci && npm run build
+
+# ── Stage 2 : Production image ───────────────────────────────────────────────
+FROM serversideup/php:8.4-fpm-nginx
+USER root
+
+WORKDIR /var/www/html
+
+COPY --from=builder /var/www/html/vendor ./vendor
+COPY --from=builder /var/www/html/public/build ./public/build
+COPY . .
 
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
