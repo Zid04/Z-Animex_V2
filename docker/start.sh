@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-# Render fournit PORT, serversideup/php utilise NGINX_HTTP_PORT
+# serversideup/php lit NGINX_HTTP_PORT pour configurer nginx
+# Render fournit PORT dynamiquement
 export NGINX_HTTP_PORT=${PORT:-8080}
 
 # Laravel bootstrap
@@ -10,5 +11,5 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Démarre PHP-FPM + Nginx via l'entrypoint serversideup
+# serversideup gère nginx + php-fpm via S6 overlay
 exec /init
