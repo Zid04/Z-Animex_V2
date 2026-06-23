@@ -1,6 +1,4 @@
 # ── Stage 1 : Build (PHP 8.4 + Node 22) ─────────────────────────────────────
-# serversideup inclut PHP 8.4. On y installe Node 22 pour que
-# wayfinder puisse appeler "php artisan" pendant "npm run build".
 FROM serversideup/php:8.4-fpm-nginx AS builder
 USER root
 
@@ -18,10 +16,14 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 COPY . .
 RUN composer dump-autoload --optimize --classmap-authoritative
 
-# .env temporaire nécessaire pour que artisan (wayfinder) démarre
+# .env temporaire pour les commandes artisan
 RUN cp .env.example .env && php artisan key:generate
 
-RUN npm ci && npm run build
+# Pré-générer les types wayfinder avec PHP (évite que Vite appelle artisan)
+RUN php artisan wayfinder:generate --with-form
+
+# Build Vite avec le plugin wayfinder désactivé (types déjà générés ci-dessus)
+RUN npm ci && SKIP_WAYFINDER=1 npm run build
 
 # ── Stage 2 : Production image ───────────────────────────────────────────────
 FROM serversideup/php:8.4-fpm-nginx
@@ -31,6 +33,7 @@ WORKDIR /var/www/html
 
 COPY --from=builder /var/www/html/vendor ./vendor
 COPY --from=builder /var/www/html/public/build ./public/build
+COPY --from=builder /var/www/html/resources/js/wayfinder ./resources/js/wayfinder
 COPY . .
 
 COPY docker/start.sh /start.sh

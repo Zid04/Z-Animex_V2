@@ -6,12 +6,15 @@ import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig } from 'vite';
 
+// En Docker, les types wayfinder sont pré-générés via php artisan avant ce build.
+// SKIP_WAYFINDER=1 évite un second appel à php artisan (qui n'est pas disponible dans le stage Node).
+const skipWayfinder = process.env.SKIP_WAYFINDER === '1';
+
 export default defineConfig({
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
-            ssr: false,
             fonts: [
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
@@ -25,8 +28,6 @@ export default defineConfig({
             },
         }),
         tailwindcss(),
-        wayfinder({
-            formVariants: true,
-        }),
+        ...(skipWayfinder ? [] : [wayfinder({ formVariants: true })]),
     ],
 });
