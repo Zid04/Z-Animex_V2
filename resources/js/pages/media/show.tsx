@@ -76,6 +76,20 @@ export default function MediaShow({
     user_media,
     auth,
 }: Props) {
+    const [expandedSeason, setExpandedSeason] = useState<number | null>(null);
+    const [showAddSeason, setShowAddSeason] = useState(false);
+    const [showAddEpisode, setShowAddEpisode] = useState<number | null>(null);
+
+    const commentForm = useForm({ content: '' });
+    const seasonForm = useForm({ number: '' });
+    const ratingForm = useForm({ rating: user_rating ? String(user_rating) : '5' });
+    const tagForm = useForm({ tag_id: '' });
+    const watchlistForm = useForm({
+        media_id: media.id,
+        status: 'planned' as typeof ALL_STATUSES[number],
+        progress: 0,
+    });
+
     if (!media || !media.id) {
         return (
             <>
@@ -95,9 +109,6 @@ export default function MediaShow({
         );
     }
 
-    const [expandedSeason, setExpandedSeason] = useState<number | null>(null);
-    const [showAddSeason, setShowAddSeason] = useState(false);
-    const [showAddEpisode, setShowAddEpisode] = useState<number | null>(null);
     const tags = media.tags ?? [];
     const seasons = media.seasons ?? [];
     const comments = media.comments ?? [];
@@ -106,16 +117,6 @@ export default function MediaShow({
         media.cover ??
         media.images?.jpg?.large_image_url ??
         media.images?.jpg?.image_url;
-
-    const commentForm = useForm({ content: '' });
-    const seasonForm = useForm({ number: '' });
-    const ratingForm = useForm({ rating: user_rating ? String(user_rating) : '5' });
-    const tagForm = useForm({ tag_id: '' });
-    const watchlistForm = useForm({
-        media_id: media.id,
-        status: 'planned' as typeof ALL_STATUSES[number],
-        progress: 0,
-    });
 
     function submitComment(e: React.FormEvent) {
         e.preventDefault();

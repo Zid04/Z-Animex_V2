@@ -12,9 +12,6 @@ interface EpisodeProgressCheckboxProps {
 }
 
 export function EpisodeProgressCheckbox({
-    mediaId,
-    seasonId,
-    episodeId,
     watched,
     storeUrl,
     destroyUrl,
