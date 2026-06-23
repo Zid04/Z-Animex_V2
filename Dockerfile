@@ -1,12 +1,4 @@
-# ── Stage 1 : Build Vite assets ─────────────────────────────────────────────
-FROM node:22-alpine AS assets
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-# ── Stage 2 : Composer (prod deps only) ─────────────────────────────────────
+# ── Stage 1 : Composer (prod deps only) ─────────────────────────────────────
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
@@ -19,9 +11,30 @@ RUN composer install \
 COPY . .
 RUN composer dump-autoload --optimize --classmap-authoritative
 
+# ── Stage 2 : Build Vite assets ──────────────────────────────────────────────
+# PHP requis ici car wayfinder appelle "php artisan" pendant vite build
+FROM node:22-alpine AS assets
+RUN apk add --no-cache \
+    php83 \
+    php83-phar \
+    php83-mbstring \
+    php83-xml \
+    php83-dom \
+    php83-tokenizer \
+    php83-simplexml \
+    php83-xmlwriter \
+    php83-ctype \
+    php83-json \
+    php83-openssl
+RUN ln -s /usr/bin/php83 /usr/bin/php
+
+WORKDIR /app
+COPY --from=vendor /app ./
+RUN cp .env.example .env && php artisan key:generate
+RUN npm ci
+RUN npm run build
+
 # ── Stage 3 : Production image ───────────────────────────────────────────────
-# serversideup/php inclut PHP 8.4 + Nginx + FPM + toutes les extensions Laravel
-# pdo_pgsql, opcache, zip, bcmath, pcntl, redis... déjà compilées
 FROM serversideup/php:8.4-fpm-nginx
 
 WORKDIR /var/www/html
