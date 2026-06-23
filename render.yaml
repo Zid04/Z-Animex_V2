@@ -6,6 +6,8 @@ services:
     dockerContext: .
     plan: free
     healthCheckPath: /
+    # serversideup/php écoute sur 8080 par défaut
+    # PORT est transmis automatiquement par Render → NGINX_HTTP_PORT dans start.sh
     envVars:
       - key: APP_NAME
         value: Z-Animex

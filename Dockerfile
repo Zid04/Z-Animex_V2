@@ -20,31 +20,9 @@ COPY . .
 RUN composer dump-autoload --optimize --classmap-authoritative
 
 # ── Stage 3 : Production image ───────────────────────────────────────────────
-FROM php:8.4-fpm-alpine
-
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
-    libpq-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    gettext \
-    sqlite-dev
-
-RUN docker-php-ext-install \
-    pdo \
-    pdo_pgsql \
-    pdo_sqlite \
-    opcache \
-    zip \
-    bcmath \
-    pcntl
-
-COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
-COPY docker/supervisord.conf /etc/supervisord.conf
-COPY docker/start.sh /start.sh
-RUN chmod +x /start.sh
+# serversideup/php inclut PHP 8.4 + Nginx + FPM + toutes les extensions Laravel
+# pdo_pgsql, opcache, zip, bcmath, pcntl, redis... déjà compilées
+FROM serversideup/php:8.4-fpm-nginx
 
 WORKDIR /var/www/html
 
@@ -52,9 +30,12 @@ COPY --from=vendor /app/vendor ./vendor
 COPY . .
 COPY --from=assets /app/public/build ./public/build
 
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
+
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 10000
+EXPOSE 8080
 
 CMD ["/start.sh"]
